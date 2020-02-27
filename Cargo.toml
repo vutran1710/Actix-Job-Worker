@@ -1,0 +1,14 @@
+[package]
+name = "DFW"
+version = "0.1.0"
+authors = ["vutr <me@vutr.io>"]
+edition = "2018"
+
+[dependencies]
+actix = "0.10.0-alpha.1"
+amiquip = { version = "0.3", default-features = false }
+serde = "*"
+serde_json = "*"
+dotenv = "*"
+log = "*"
+pretty_env_logger = "*"

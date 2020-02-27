@@ -1,0 +1,18 @@
+#+OPTIONS: ^:nil
+#+TITLE: ActixConsumer
+#+DATE: <2020-02-27 Tue>
+#+AUTHOR: Vu Tran
+#+EMAIL: me@vutr.io`
+
+* Content                                                               :TOC:
+- [[#introduction][Introduction]]
+- [[#first][First]]
+
+* Introduction
+ActixConsumer app
+
+* First
+Run
+#+begin_src shell
+$ cargo check
+#+end_src
