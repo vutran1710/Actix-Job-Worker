@@ -4,25 +4,28 @@ extern crate dotenv;
 #[macro_use]
 extern crate log;
 extern crate pretty_env_logger;
+extern crate r2d2_redis;
 extern crate serde_json;
 
 mod config;
 mod hollywood;
+mod services;
 
 use actix::{Actor, System};
 use config::EnvConfig;
-use dotenv::dotenv;
-
 use hollywood::scout::ScoutAgent;
+use services::redis::*;
 
 fn main() {
     let cfg = EnvConfig::new();
 
-    debug!("Starting.. {:?}", cfg.RUST_LOG);
-
+    let redpool = init_redis_pool(&cfg.REDIS_URI);
     let system = System::new("test");
 
-    let addr = ScoutAgent.start();
+    ScoutAgent::new(&redpool).start();
 
-    system.run();
+    match system.run() {
+        Ok(_) => (),
+        Err(_) => error!("Actor system failed to start. Exiting..."),
+    };
 }
