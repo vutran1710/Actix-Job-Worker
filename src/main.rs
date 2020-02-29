@@ -16,7 +16,7 @@ mod types;
 
 use actix::{SyncArbiter, System};
 use config::EnvConfig;
-use crews::guard::Guard;
+// use crews::guard::Guard;
 use handlers::posts::*;
 use hollywood::reader::ReaderActor;
 use services::rabbit::*;
@@ -24,16 +24,15 @@ use services::redis::*;
 
 fn main() {
     let cfg = EnvConfig::new();
-
-    let redpool = init_redis_pool(&cfg.REDIS_URI);
     let system = System::new("test");
+    let _redpool = init_redis_pool(&cfg.REDIS_URI);
 
     // Guard::check(&redpool).unwrap();
-    let reader_actor = SyncArbiter::start(5, || ReaderActor);
+    let reader_actor = SyncArbiter::start(2, || ReaderActor);
     Rabbit::new(&cfg).bind(handle_new_post(reader_actor), &"new_post_queue");
 
     match system.run() {
-        Ok(_) => (),
-        Err(_) => error!("Actor system failed to start. Exiting..."),
+        Ok(()) => (),
+        Err(e) => error!("{}", e),
     };
 }

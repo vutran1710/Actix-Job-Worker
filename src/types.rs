@@ -1,3 +1,3 @@
 use amiquip::Delivery;
 
-pub type Handler = Box<Fn(&Delivery) -> Result<(), String>>;
+pub type Handler = Box<dyn Fn(&Delivery) -> Result<(), String>>;

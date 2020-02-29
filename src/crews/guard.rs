@@ -1,10 +1,12 @@
 use r2d2_redis::{r2d2::Pool, r2d2::PooledConnection, redis::Commands, RedisConnectionManager};
 
+#[allow(dead_code)]
 pub struct Guard {
     pub conn: PooledConnection<RedisConnectionManager>,
 }
 
 impl Guard {
+    #[allow(dead_code)]
     pub fn check(pool: &Pool<RedisConnectionManager>) -> Result<(), String> {
         let mut conn = pool.get().unwrap();
         let required_keys = ["CLOJURE", "RUST", "PYTHON"];

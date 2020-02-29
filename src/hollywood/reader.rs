@@ -5,21 +5,20 @@ pub struct Msg {
 }
 
 impl Message for Msg {
-    type Result = ();
+    type Result = String;
 }
 
-// Actor definition
 pub struct ReaderActor;
 
 impl Actor for ReaderActor {
     type Context = SyncContext<Self>;
 }
 
-// now we need to define `MessageHandler` for the `Msg` message.
 impl Handler<Msg> for ReaderActor {
-    type Result = (); // <- Msg response type
+    type Result = String;
 
-    fn handle(&mut self, msg: Msg, _ctx: &mut SyncContext<Self>) -> Self::Result {
-        info!("Done: {}", msg.body);
+    fn handle(&mut self, msg: Msg, _: &mut Self::Context) -> Self::Result {
+        info!("Ping....");
+        return format!("Nice: {}", msg.body);
     }
 }

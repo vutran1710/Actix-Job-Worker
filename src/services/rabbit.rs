@@ -9,8 +9,8 @@ pub struct Rabbit {
 impl Rabbit {
     pub fn new(cfg: &EnvConfig) -> Rabbit {
         info!("Initialising rabbitmq app");
-        let connection = Connection::insecure_open(&cfg.AMQP_URI).unwrap();
-        Rabbit { conn: connection }
+        let conn = Connection::insecure_open(&cfg.AMQP_URI).unwrap();
+        Rabbit { conn }
     }
 
     pub fn bind(&mut self, handler: Handler, que: &str) -> () {
