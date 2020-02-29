@@ -9,12 +9,16 @@ extern crate serde_json;
 
 mod config;
 mod crews;
+mod handlers;
 mod hollywood;
 mod services;
+mod types;
 
-use actix::System;
+use actix::{SyncArbiter, System};
 use config::EnvConfig;
 use crews::guard::Guard;
+use handlers::posts::*;
+use hollywood::reader::ReaderActor;
 use services::rabbit::*;
 use services::redis::*;
 
@@ -24,8 +28,12 @@ fn main() {
     let redpool = init_redis_pool(&cfg.REDIS_URI);
     let system = System::new("test");
 
-    Guard::check(&redpool).unwrap();
-    Rabbit::new(&cfg);
+    // Guard::check(&redpool).unwrap();
+    let mut rabbit = Rabbit::new(&cfg);
+
+    let reader_actor = SyncArbiter::start(5, || ReaderActor);
+
+    rabbit.bind(handle_new_post(reader_actor), &"new_post_queue");
 
     match system.run() {
         Ok(_) => (),

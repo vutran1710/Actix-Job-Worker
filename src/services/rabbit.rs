@@ -1,7 +1,6 @@
 use crate::config::EnvConfig;
-use amiquip::{
-    Channel, Connection, ConsumerMessage, ConsumerOptions, Delivery, QueueDeclareOptions,
-};
+use crate::types::Handler;
+use amiquip::{Channel, Connection, ConsumerMessage, ConsumerOptions, QueueDeclareOptions};
 
 pub struct Rabbit {
     pub channel: Channel,
@@ -15,7 +14,7 @@ impl Rabbit {
         Rabbit { channel }
     }
 
-    pub fn bind(&mut self, handler: fn(&Delivery) -> Result<(), String>, que: String) -> () {
+    pub fn bind(&mut self, handler: Handler, que: &str) -> () {
         let queue = self
             .channel
             .queue_declare(que, QueueDeclareOptions::default())
