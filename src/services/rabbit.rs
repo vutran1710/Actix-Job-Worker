@@ -1,22 +1,21 @@
 use crate::config::EnvConfig;
 use crate::types::Handler;
-use amiquip::{Channel, Connection, ConsumerMessage, ConsumerOptions, QueueDeclareOptions};
+use amiquip::{Connection, ConsumerMessage, ConsumerOptions, QueueDeclareOptions};
 
 pub struct Rabbit {
-    pub channel: Channel,
+    pub conn: Connection,
 }
 
 impl Rabbit {
     pub fn new(cfg: &EnvConfig) -> Rabbit {
         info!("Initialising rabbitmq app");
-        let mut connection = Connection::insecure_open(&cfg.AMQP_URI).unwrap();
-        let channel = connection.open_channel(None).unwrap();
-        Rabbit { channel }
+        let connection = Connection::insecure_open(&cfg.AMQP_URI).unwrap();
+        Rabbit { conn: connection }
     }
 
     pub fn bind(&mut self, handler: Handler, que: &str) -> () {
-        let queue = self
-            .channel
+        let channel = self.conn.open_channel(None).unwrap();
+        let queue = channel
             .queue_declare(que, QueueDeclareOptions::default())
             .unwrap();
         let consumer = queue.consume(ConsumerOptions::default()).unwrap();

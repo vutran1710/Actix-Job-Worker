@@ -29,11 +29,8 @@ fn main() {
     let system = System::new("test");
 
     // Guard::check(&redpool).unwrap();
-    let mut rabbit = Rabbit::new(&cfg);
-
     let reader_actor = SyncArbiter::start(5, || ReaderActor);
-
-    rabbit.bind(handle_new_post(reader_actor), &"new_post_queue");
+    Rabbit::new(&cfg).bind(handle_new_post(reader_actor), &"new_post_queue");
 
     match system.run() {
         Ok(_) => (),
