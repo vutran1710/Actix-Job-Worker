@@ -1,18 +1,18 @@
 use actix::{Actor, ActorContext, Context, System};
 use r2d2_redis::{r2d2::Pool, r2d2::PooledConnection, redis::Commands, RedisConnectionManager};
 
-pub struct ScoutAgent {
+pub struct ScoutActor {
     pub conn: PooledConnection<RedisConnectionManager>,
 }
 
-impl ScoutAgent {
-    pub fn new(pool: &Pool<RedisConnectionManager>) -> ScoutAgent {
+impl ScoutActor {
+    pub fn new(pool: &Pool<RedisConnectionManager>) -> ScoutActor {
         let conn = pool.get().unwrap();
-        ScoutAgent { conn }
+        ScoutActor { conn }
     }
 }
 
-impl Actor for ScoutAgent {
+impl Actor for ScoutActor {
     type Context = Context<Self>;
 
     fn started(&mut self, ctx: &mut Self::Context) {

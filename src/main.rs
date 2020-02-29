@@ -8,12 +8,14 @@ extern crate r2d2_redis;
 extern crate serde_json;
 
 mod config;
+mod crews;
 mod hollywood;
 mod services;
 
-use actix::{Actor, System};
+use actix::System;
 use config::EnvConfig;
-use hollywood::scout::ScoutAgent;
+use crews::guard::Guard;
+use services::rabbit::*;
 use services::redis::*;
 
 fn main() {
@@ -22,7 +24,8 @@ fn main() {
     let redpool = init_redis_pool(&cfg.REDIS_URI);
     let system = System::new("test");
 
-    ScoutAgent::new(&redpool).start();
+    Guard::check(&redpool).unwrap();
+    Rabbit::new(&cfg);
 
     match system.run() {
         Ok(_) => (),

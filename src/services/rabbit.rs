@@ -4,11 +4,12 @@ use amiquip::{
 };
 
 pub struct Rabbit {
-    channel: Channel,
+    pub channel: Channel,
 }
 
 impl Rabbit {
     pub fn new(cfg: &EnvConfig) -> Rabbit {
+        info!("Initialising rabbitmq app");
         let mut connection = Connection::insecure_open(&cfg.AMQP_URI).unwrap();
         let channel = connection.open_channel(None).unwrap();
         Rabbit { channel }
