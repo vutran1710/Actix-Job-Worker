@@ -8,6 +8,7 @@ pub struct EnvConfig {
     pub RUST_LOG: String,
     pub AMQP_URI: String,
     pub REDIS_URI: String,
+    pub CONSUME_ACTOR: u8,
 }
 
 impl EnvConfig {
@@ -27,6 +28,7 @@ impl EnvConfig {
             RUST_LOG: retrieve("RUST_LOG"),
             AMQP_URI: retrieve("AMQP_URI"),
             REDIS_URI: retrieve("REDIS_URI"),
+            CONSUME_ACTOR: retrieve("CONSUME_ACTOR").parse::<u8>().unwrap(),
         };
 
         info!("Loaded env configurations!");

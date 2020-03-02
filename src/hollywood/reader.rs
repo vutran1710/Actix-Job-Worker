@@ -18,7 +18,7 @@ impl Handler<Msg> for ReaderActor {
     type Result = String;
 
     fn handle(&mut self, msg: Msg, _: &mut Self::Context) -> Self::Result {
-        info!("Ping....");
+        info!("Ping...., {}", msg.body);
         return format!("Nice: {}", msg.body);
     }
 }

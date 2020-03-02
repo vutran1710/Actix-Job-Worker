@@ -17,6 +17,7 @@ mod types;
 use actix::SyncArbiter;
 use amiquip::{Connection, ConsumerMessage, ConsumerOptions, QueueDeclareOptions};
 use config::EnvConfig;
+use std::convert::TryInto;
 // use crews::guard::Guard;
 // use handlers::posts::*;
 use hollywood::reader::{Msg, ReaderActor};
@@ -31,7 +32,7 @@ async fn main() {
     // Guard::check(&redpool).unwrap();
     // Rabbit::new(&cfg).bind(handle_new_post(reader_actor), &"new_post_queue");
 
-    let addr = SyncArbiter::start(2, || ReaderActor);
+    let addr = SyncArbiter::start(cfg.CONSUME_ACTOR.try_into().unwrap(), || ReaderActor);
 
     let mut conn = Connection::insecure_open(&cfg.AMQP_URI).unwrap();
     let que = "new_post_queue".to_string();
@@ -47,10 +48,7 @@ async fn main() {
                 let body = String::from_utf8_lossy(&delivery.body).to_string();
                 let msg = Msg { body };
                 match addr.send(msg).await {
-                    Ok(result) => {
-                        info!("Result = {}", result);
-                        consumer.ack(delivery).unwrap();
-                    }
+                    Ok(_) => consumer.ack(delivery).unwrap(),
                     Err(e) => {
                         error!("Cannot process message: {}", e);
                         consumer.nack(delivery, true).unwrap();
