@@ -9,28 +9,23 @@ extern crate serde_json;
 
 mod config;
 mod crews;
-mod handlers;
 mod hollywood;
 mod services;
-mod types;
 
 use actix::SyncArbiter;
 use amiquip::{Connection, ConsumerMessage, ConsumerOptions, QueueDeclareOptions};
 use config::EnvConfig;
-use std::convert::TryInto;
-// use crews::guard::Guard;
-// use handlers::posts::*;
+use crews::guard::Guard;
 use hollywood::reader::{Msg, ReaderActor};
-// use services::rabbit::*;
 use services::redis::*;
+use std::convert::TryInto;
 
 #[actix_rt::main]
 async fn main() {
     let cfg = EnvConfig::new();
-    let _redpool = init_redis_pool(&cfg.REDIS_URI);
+    let redpool = init_redis_pool(&cfg.REDIS_URI);
 
-    // Guard::check(&redpool).unwrap();
-    // Rabbit::new(&cfg).bind(handle_new_post(reader_actor), &"new_post_queue");
+    Guard::check(&redpool).unwrap();
 
     let addr = SyncArbiter::start(cfg.CONSUME_ACTOR.try_into().unwrap(), || ReaderActor);
 
