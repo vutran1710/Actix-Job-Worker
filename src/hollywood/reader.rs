@@ -1,4 +1,5 @@
 use actix::{Actor, Handler, Message, SyncContext};
+use std::thread;
 
 pub struct Msg {
     pub body: String,
@@ -17,8 +18,12 @@ impl Actor for ReaderActor {
 impl Handler<Msg> for ReaderActor {
     type Result = String;
 
-    fn handle(&mut self, msg: Msg, _: &mut Self::Context) -> Self::Result {
-        info!("Ping...., {}", msg.body);
+    fn handle(&mut self, msg: Msg, _: &mut SyncContext<ReaderActor>) -> Self::Result {
+        info!(
+            "Ping...., {} by addr={:?}",
+            msg.body,
+            thread::current().id()
+        );
         return format!("Nice: {}", msg.body);
     }
 }
