@@ -1,31 +1,47 @@
-use crate::config::EnvConfig;
 use crate::hollywood::reader::{Msg, ReaderActor};
 use actix::Addr;
 use amiquip::{
-    Connection, ConsumerMessage, ConsumerOptions, ExchangeDeclareOptions, ExchangeType, FieldTable,
-    QueueDeclareOptions,
+    Channel, Connection, ConsumerMessage, ConsumerOptions, Error as AmqpError,
+    ExchangeDeclareOptions, ExchangeType, FieldTable, QueueDeclareOptions,
 };
 
-pub async fn rabbit(cfg: &EnvConfig, actor: Addr<ReaderActor>, queue_name: &str) -> () {
-    info!("Initialising rabbitmq app");
-    let mut conn = Connection::insecure_open(&cfg.AMQP_URI).unwrap();
-    let channel = conn.open_channel(None).unwrap();
+pub struct AmqpConfig {
+    pub queue_name: String,
+    pub exchange_name: String,
+    pub exchange_type: ExchangeType,
+    pub routing_keys: Vec<String>,
+}
 
+pub async fn consume(conn: &mut Connection, cfg: AmqpConfig, actor: Addr<ReaderActor>) -> () {
+    let channel = conn.open_channel(None).unwrap();
     let queue = channel
-        .queue_declare(queue_name, QueueDeclareOptions::default())
+        .queue_declare(
+            &cfg.queue_name,
+            QueueDeclareOptions {
+                durable: true,
+                auto_delete: false,
+                exclusive: false,
+                arguments: FieldTable::default(),
+            },
+        )
         .unwrap();
 
     let exchange = channel
         .exchange_declare(
-            ExchangeType::Direct,
-            "love-exchange",
-            ExchangeDeclareOptions::default(),
+            cfg.exchange_type,
+            cfg.exchange_name,
+            ExchangeDeclareOptions {
+                durable: true,
+                auto_delete: true,
+                internal: false,
+                arguments: FieldTable::default(),
+            },
         )
         .unwrap();
 
-    queue
-        .bind(&exchange, "love-you", FieldTable::default())
-        .unwrap();
+    cfg.routing_keys
+        .into_iter()
+        .for_each(|key| queue.bind(&exchange, key, FieldTable::default()).unwrap());
 
     let consumer = queue.consume(ConsumerOptions::default()).unwrap();
 

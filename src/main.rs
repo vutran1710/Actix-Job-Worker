@@ -11,10 +11,12 @@ mod config;
 mod crews;
 mod handlers;
 mod hollywood;
+mod macros;
 mod services;
 mod types;
 
 use actix::SyncArbiter;
+use amiquip::{Connection, ExchangeType};
 use config::EnvConfig;
 // use crews::guard::Guard;
 // use handlers::posts::*;
@@ -29,5 +31,15 @@ async fn main() {
 
     // Guard::check(&redpool).unwrap();
     let reader_actor = SyncArbiter::start(2, || ReaderActor);
-    rabbit(&cfg, reader_actor, &"new_relationship_queue").await;
+
+    let mut conn = Connection::insecure_open(&cfg.AMQP_URI).unwrap();
+    let amqp_config = AmqpConfig {
+        queue_name: String::from("love-queue"),
+        exchange_name: String::from("love-exchange"),
+        exchange_type: ExchangeType::Direct,
+        // routing_keys: vec!["love-you".to_string(), "hate-you".to_string()],
+        routing_keys: vec_of_strings!["love-you", "hate-you"],
+    };
+
+    consume(&mut conn, amqp_config, reader_actor).await;
 }
