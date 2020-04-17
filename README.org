@@ -17,8 +17,8 @@ Lapin is not considered because I want a simple approach with minimal black-magi
 
 This can be used as a template for quick application scaffolding.
 
-Planning to make 2 templates out this:
-- One is a atix-job-worker working with a single amqp broker - single consumer, one exchange one queue , from one single
+Planning to make 2 templates out of this:
+- An atix-job-worker working with a single amqp broker - single consumer, one exchange one queue , from one single
   connection
 - Multi-Brokers (*WIP*)
 
@@ -29,7 +29,7 @@ Install dependencies
 $ cargo check
 #+end_src
 
-Refer to ~src/.env~ for environment config, make any adjustment if neccesary
+Refer to ~.env~ for environment config, make any adjustment if neccesary
 
 Run the app
 #+begin_src shell
