@@ -1,5 +1,5 @@
 [package]
-name = "DFW"
+name = "actix-rabbitmq-worker"
 version = "0.1.0"
 authors = ["vutr <me@vutr.io>"]
 edition = "2018"
