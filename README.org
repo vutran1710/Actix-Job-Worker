@@ -1,18 +1,37 @@
 #+OPTIONS: ^:nil
-#+TITLE: ActixConsumer
+#+TITLE: Actix-Job-Worker
 #+DATE: <2020-02-27 Tue>
 #+AUTHOR: Vu Tran
 #+EMAIL: me@vutr.io`
 
 * Content                                                               :TOC:
 - [[#introduction][Introduction]]
-- [[#first][First]]
+- [[#setup][Setup]]
 
 * Introduction
-ActixConsumer app
+An event-driven job-worker that runs background jobs on receiving messages from RabbitMQ.
 
-* First
-Run
+Basically it is based on *Actix* and *Amiquip*.
+
+Lapin is not considered because I want a simple approach with minimal black-magic.
+
+This can be used as a template for quick application scaffolding.
+
+Planning to make 2 templates out this:
+- One is a atix-job-worker working with a single amqp broker - single consumer, one exchange one queue , from one single
+  connection
+- Multi-Brokers (*WIP*)
+
+* Setup
+
+Install dependencies
 #+begin_src shell
 $ cargo check
+#+end_src
+
+Refer to ~src/.env~ for environment config, make any adjustment if neccesary
+
+Run the app
+#+begin_src shell
+$ cargo run
 #+end_src
