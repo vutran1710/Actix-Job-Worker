@@ -1,4 +1,4 @@
-use crate::hollywood::reader::{Msg, ReaderActor};
+use crate::actors::reader::{Msg, ReaderActor};
 use actix::Addr;
 use amiquip::{
     Connection, ConsumerMessage, ConsumerOptions, ExchangeDeclareOptions, ExchangeType, FieldTable,

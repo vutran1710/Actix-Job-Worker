@@ -7,28 +7,23 @@ extern crate pretty_env_logger;
 extern crate r2d2_redis;
 extern crate serde_json;
 
+mod actors;
 mod config;
-mod crews;
-mod handlers;
-mod hollywood;
+mod connections;
 mod macros;
-mod services;
-// mod types;
 
 use actix::SyncArbiter;
+use actors::reader::ReaderActor;
 use amiquip::{Connection, ExchangeType};
 use config::EnvConfig;
-// use crews::guard::Guard;
-// use handlers::posts::*;
-// use services::redis::*;
-use hollywood::reader::ReaderActor;
-use services::rabbit::*;
+use connections::rabbit::*;
 
 #[actix_rt::main]
 async fn main() {
     let cfg = EnvConfig::new();
-    // let redis = init_redis_pool(&cfg.REDIS_URI);
-    // Guard::check(&redpool).unwrap();
+
+    // With received messages, we pass them to reader_actors
+    // that run in multi-threading context
     let reader_actor = SyncArbiter::start(2, || ReaderActor);
 
     let mut conn = Connection::insecure_open(&cfg.AMQP_URI).unwrap();
