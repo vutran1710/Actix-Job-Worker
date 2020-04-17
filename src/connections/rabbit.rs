@@ -1,4 +1,4 @@
-use crate::actors::reader::{Msg, ReaderActor};
+use crate::actors::{messages::LoveMessage, reader::ReaderActor};
 use actix::Addr;
 use amiquip::{
     Connection, ConsumerMessage, ConsumerOptions, ExchangeDeclareOptions, ExchangeType, FieldTable,
@@ -49,7 +49,7 @@ pub async fn consume(conn: &mut Connection, cfg: AmqpConfig, actor: &Addr<Reader
         match message {
             ConsumerMessage::Delivery(delivery) => {
                 let body = String::from_utf8_lossy(&delivery.body).to_string();
-                let msg = Msg { body };
+                let msg = LoveMessage { body };
                 match actor.send(msg).await.unwrap() {
                     Ok(()) => {
                         info!("Successful");
