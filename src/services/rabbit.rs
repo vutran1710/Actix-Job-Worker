@@ -1,56 +1,54 @@
 use crate::config::EnvConfig;
-use crate::types::Handler;
+use crate::hollywood::reader::{Msg, ReaderActor};
+use actix::Addr;
 use amiquip::{
     Connection, ConsumerMessage, ConsumerOptions, ExchangeDeclareOptions, ExchangeType, FieldTable,
     QueueDeclareOptions,
 };
 
-pub struct Rabbit {
-    pub conn: Connection,
-}
+pub async fn rabbit(cfg: &EnvConfig, actor: Addr<ReaderActor>, queue_name: &str) -> () {
+    info!("Initialising rabbitmq app");
+    let mut conn = Connection::insecure_open(&cfg.AMQP_URI).unwrap();
+    let channel = conn.open_channel(None).unwrap();
 
-impl Rabbit {
-    pub fn new(cfg: &EnvConfig) -> Rabbit {
-        info!("Initialising rabbitmq app");
-        let conn = Connection::insecure_open(&cfg.AMQP_URI).unwrap();
-        Rabbit { conn }
-    }
+    let queue = channel
+        .queue_declare(queue_name, QueueDeclareOptions::default())
+        .unwrap();
 
-    pub fn bind(&mut self, handler: Handler, que: &str) -> () {
-        let channel = self.conn.open_channel(None).unwrap();
-        let queue = channel
-            .queue_declare(que, QueueDeclareOptions::default())
-            .unwrap();
-        let exchange = channel
-            .exchange_declare(
-                ExchangeType::Direct,
-                "love-exchange",
-                ExchangeDeclareOptions::default(),
-            )
-            .unwrap();
-        queue
-            .bind(&exchange, "love-you", FieldTable::default())
-            .unwrap();
+    let exchange = channel
+        .exchange_declare(
+            ExchangeType::Direct,
+            "love-exchange",
+            ExchangeDeclareOptions::default(),
+        )
+        .unwrap();
 
-        let consumer = queue.consume(ConsumerOptions::default()).unwrap();
+    queue
+        .bind(&exchange, "love-you", FieldTable::default())
+        .unwrap();
 
-        for (_, message) in consumer.receiver().iter().enumerate() {
-            match message {
-                ConsumerMessage::Delivery(delivery) => match handler(&delivery) {
+    let consumer = queue.consume(ConsumerOptions::default()).unwrap();
+
+    for (_, message) in consumer.receiver().iter().enumerate() {
+        match message {
+            ConsumerMessage::Delivery(delivery) => {
+                let body = String::from_utf8_lossy(&delivery.body).to_string();
+                let msg = Msg { body };
+                match actor.send(msg).await.unwrap() {
                     Ok(()) => {
                         info!("Successful");
                         consumer.ack(delivery).unwrap()
                     }
-                    Err(e) => {
+                    Err(()) => {
                         error!("Cannot process message..");
-                        error!("{}", e);
+                        // error!("{}", e);
                         consumer.nack(delivery, true).unwrap()
                     }
-                },
-                other => {
-                    println!("Consumer ended: {:?}", other);
-                    break;
                 }
+            }
+            other => {
+                println!("Consumer ended: {:?}", other);
+                break;
             }
         }
     }
