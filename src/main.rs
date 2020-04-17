@@ -11,28 +11,33 @@ mod config;
 mod crews;
 mod handlers;
 mod hollywood;
+mod macros;
 mod services;
-mod types;
+// mod types;
 
-use actix::{SyncArbiter, System};
+use actix::SyncArbiter;
+use amiquip::{Connection, ExchangeType};
 use config::EnvConfig;
 // use crews::guard::Guard;
-use handlers::posts::*;
+// use handlers::posts::*;
+// use services::redis::*;
 use hollywood::reader::ReaderActor;
 use services::rabbit::*;
-use services::redis::*;
 
-fn main() {
+#[actix_rt::main]
+async fn main() {
     let cfg = EnvConfig::new();
-    let system = System::new("test");
-    let _redpool = init_redis_pool(&cfg.REDIS_URI);
-
+    // let redis = init_redis_pool(&cfg.REDIS_URI);
     // Guard::check(&redpool).unwrap();
     let reader_actor = SyncArbiter::start(2, || ReaderActor);
-    Rabbit::new(&cfg).bind(handle_new_post(reader_actor), &"new_relationship_queue");
 
-    match system.run() {
-        Ok(()) => (),
-        Err(e) => error!("{}", e),
+    let mut conn = Connection::insecure_open(&cfg.AMQP_URI).unwrap();
+    let amqp_love_config = AmqpConfig {
+        queue_name: String::from("love-queue"),
+        exchange_name: String::from("love-exchange"),
+        exchange_type: ExchangeType::Direct,
+        routing_keys: vec_of_strings!["love-you", "hate-you"],
     };
+
+    consume(&mut conn, amqp_love_config, &reader_actor).await;
 }

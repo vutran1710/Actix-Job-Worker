@@ -5,7 +5,7 @@ pub struct Msg {
 }
 
 impl Message for Msg {
-    type Result = String;
+    type Result = Result<(), ()>;
 }
 
 pub struct ReaderActor;
@@ -15,10 +15,10 @@ impl Actor for ReaderActor {
 }
 
 impl Handler<Msg> for ReaderActor {
-    type Result = String;
+    type Result = Result<(), ()>;
 
     fn handle(&mut self, msg: Msg, _: &mut Self::Context) -> Self::Result {
-        info!("Ping....");
-        return format!("Nice: {}", msg.body);
+        info!("Ping....{}", msg.body);
+        Ok(())
     }
 }
