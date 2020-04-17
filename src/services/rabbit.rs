@@ -1,8 +1,8 @@
 use crate::hollywood::reader::{Msg, ReaderActor};
 use actix::Addr;
 use amiquip::{
-    Channel, Connection, ConsumerMessage, ConsumerOptions, Error as AmqpError,
-    ExchangeDeclareOptions, ExchangeType, FieldTable, QueueDeclareOptions,
+    Connection, ConsumerMessage, ConsumerOptions, ExchangeDeclareOptions, ExchangeType, FieldTable,
+    QueueDeclareOptions,
 };
 
 pub struct AmqpConfig {
@@ -12,7 +12,7 @@ pub struct AmqpConfig {
     pub routing_keys: Vec<String>,
 }
 
-pub async fn consume(conn: &mut Connection, cfg: AmqpConfig, actor: Addr<ReaderActor>) -> () {
+pub async fn consume(conn: &mut Connection, cfg: AmqpConfig, actor: &Addr<ReaderActor>) -> () {
     let channel = conn.open_channel(None).unwrap();
     let queue = channel
         .queue_declare(
@@ -32,7 +32,7 @@ pub async fn consume(conn: &mut Connection, cfg: AmqpConfig, actor: Addr<ReaderA
             cfg.exchange_name,
             ExchangeDeclareOptions {
                 durable: true,
-                auto_delete: true,
+                auto_delete: false,
                 internal: false,
                 arguments: FieldTable::default(),
             },
