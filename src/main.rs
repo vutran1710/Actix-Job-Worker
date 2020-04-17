@@ -29,7 +29,7 @@ fn main() {
 
     // Guard::check(&redpool).unwrap();
     let reader_actor = SyncArbiter::start(2, || ReaderActor);
-    Rabbit::new(&cfg).bind(handle_new_post(reader_actor), &"new_post_queue");
+    Rabbit::new(&cfg).bind(handle_new_post(reader_actor), &"new_relationship_queue");
 
     match system.run() {
         Ok(()) => (),

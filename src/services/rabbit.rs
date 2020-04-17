@@ -1,6 +1,9 @@
 use crate::config::EnvConfig;
 use crate::types::Handler;
-use amiquip::{Connection, ConsumerMessage, ConsumerOptions, QueueDeclareOptions};
+use amiquip::{
+    Connection, ConsumerMessage, ConsumerOptions, ExchangeDeclareOptions, ExchangeType, FieldTable,
+    QueueDeclareOptions,
+};
 
 pub struct Rabbit {
     pub conn: Connection,
@@ -18,12 +21,26 @@ impl Rabbit {
         let queue = channel
             .queue_declare(que, QueueDeclareOptions::default())
             .unwrap();
+        let exchange = channel
+            .exchange_declare(
+                ExchangeType::Direct,
+                "love-exchange",
+                ExchangeDeclareOptions::default(),
+            )
+            .unwrap();
+        queue
+            .bind(&exchange, "love-you", FieldTable::default())
+            .unwrap();
+
         let consumer = queue.consume(ConsumerOptions::default()).unwrap();
 
         for (_, message) in consumer.receiver().iter().enumerate() {
             match message {
                 ConsumerMessage::Delivery(delivery) => match handler(&delivery) {
-                    Ok(()) => consumer.ack(delivery).unwrap(),
+                    Ok(()) => {
+                        info!("Successful");
+                        consumer.ack(delivery).unwrap()
+                    }
                     Err(e) => {
                         error!("Cannot process message..");
                         error!("{}", e);
