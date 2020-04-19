@@ -15,12 +15,10 @@ impl EnvConfig {
         dotenv::dotenv().ok();
         pretty_env_logger::init();
 
-        let retrieve = |key: &str| match dotenv::var(key) {
-            Ok(val) => val,
-            Err(_) => match env::var(key) {
-                Ok(val) => val,
-                Err(_) => panic!(format!("Missing EnVar: {}", key)),
-            },
+        let retrieve = |key: &str| {
+            let panic_msg = format!("Missing env var {}", key);
+            let dotenv_get = |_| dotenv::var(key).expect(&panic_msg);
+            env::var(key).unwrap_or_else(dotenv_get)
         };
 
         let cfg = EnvConfig {
