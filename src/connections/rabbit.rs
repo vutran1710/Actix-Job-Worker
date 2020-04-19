@@ -4,7 +4,12 @@ use crate::actors::reader::ReaderActor;
 
 use actix::Addr;
 use amiquip::{
-    Connection, ConsumerMessage, ConsumerOptions, ExchangeDeclareOptions, ExchangeType, FieldTable,
+    Connection,
+    ConsumerMessage,
+    ConsumerOptions,
+    ExchangeDeclareOptions,
+    ExchangeType,
+    FieldTable,
     QueueDeclareOptions,
 };
 
@@ -17,41 +22,37 @@ pub struct AmqpConfig {
 
 pub async fn consume(conn: &mut Connection, cfg: AmqpConfig, actor: &Addr<ReaderActor>) -> () {
     let channel = conn.open_channel(None).unwrap();
-    let queue = channel
-        .queue_declare(
-            &cfg.queue_name,
-            QueueDeclareOptions {
-                durable: true,
-                auto_delete: false,
-                exclusive: false,
-                arguments: FieldTable::default(),
-            },
-        )
-        .unwrap();
+
+    let queue_opts = QueueDeclareOptions {
+        durable: true,
+        auto_delete: false,
+        exclusive: false,
+        arguments: FieldTable::default(),
+    };
+
+    let queue = channel.queue_declare(&cfg.queue_name, queue_opts).unwrap();
+
+    let exchange_opts = ExchangeDeclareOptions {
+        durable: true,
+        auto_delete: false,
+        internal: false,
+        arguments: FieldTable::default(),
+    };
 
     let exchange = channel
-        .exchange_declare(
-            cfg.exchange_type,
-            cfg.exchange_name,
-            ExchangeDeclareOptions {
-                durable: true,
-                auto_delete: false,
-                internal: false,
-                arguments: FieldTable::default(),
-            },
-        )
+        .exchange_declare(cfg.exchange_type, cfg.exchange_name, exchange_opts)
         .unwrap();
 
     cfg.routing_keys
         .into_iter()
         .for_each(|key| queue.bind(&exchange, key, FieldTable::default()).unwrap());
 
-    let consumer = queue.consume(ConsumerOptions::default()).unwrap();
+    let consumer_opts = ConsumerOptions::default();
+    let consumer = queue.consume(consumer_opts).unwrap();
 
     for (_, message) in consumer.receiver().iter().enumerate() {
         match message {
             ConsumerMessage::Delivery(delivery) => {
-                info!("{:?}", delivery);
                 let body = String::from_utf8_lossy(&delivery.body).to_string();
                 let routing_key = RoutingKey::from_str(&delivery.routing_key).unwrap();
                 let msg = LoveMessage { body, routing_key };
@@ -60,18 +61,18 @@ pub async fn consume(conn: &mut Connection, cfg: AmqpConfig, actor: &Addr<Reader
                     Ok(()) => {
                         info!("Successful");
                         consumer.ack(delivery).unwrap()
-                    }
+                    },
                     Err(()) => {
                         error!("Cannot process message..");
                         // error!("{}", e);
                         consumer.nack(delivery, true).unwrap()
-                    }
+                    },
                 }
-            }
+            },
             other => {
                 println!("Consumer ended: {:?}", other);
                 break;
-            }
+            },
         }
     }
 }
