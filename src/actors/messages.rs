@@ -24,3 +24,16 @@ pub struct ConfessionMessage {
 impl Message for ConfessionMessage {
     type Result = Result<(), ()>;
 }
+
+// Correspondent message for Love-Event with breakup routing-key
+#[derive(Serialize, Deserialize)]
+pub struct BreakupMessage {
+    pub target: String,
+    pub user: String,
+    pub date: u32,
+    pub certainty: bool,
+}
+
+impl Message for BreakupMessage {
+    type Result = Result<(), ()>;
+}

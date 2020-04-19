@@ -1,7 +1,15 @@
 {
-  "target": "you",
-  "user": "me",
-  "date": 19121088,
-  "intensity_level": "high",
-  "certainty": 0.3
+  "confession-message": {
+    "target": "you",
+    "user": "me",
+    "date": 19121088,
+    "intensity_level": "high",
+    "certainty": 0.3
+  },
+  "breakup-message": {
+    "target": "you",
+    "user": "me",
+    "date": 19121088,
+    "certainty": true
+  }
 }
