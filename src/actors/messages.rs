@@ -1,5 +1,6 @@
 use crate::actors::enums::{IntensityLevel, RoutingKey};
 use actix::Message;
+use serde::{Deserialize, Serialize};
 
 pub struct LoveMessage {
     pub routing_key: RoutingKey,
@@ -11,6 +12,7 @@ impl Message for LoveMessage {
 }
 
 // Correspondent message for Love-Event with confession routing-key
+#[derive(Serialize, Deserialize)]
 pub struct ConfessionMessage {
     pub target: String,
     pub user: String,

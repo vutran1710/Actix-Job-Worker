@@ -1,8 +1,10 @@
 use crate::actors::confession::ConfessionActor;
 use crate::actors::enums::RoutingKey;
-use crate::actors::messages::LoveMessage;
+use crate::actors::messages::{ConfessionMessage, LoveMessage};
 
 use actix::{Actor, Handler, StreamHandler, SyncContext};
+// use futures_util::stream::once;
+use serde_json::from_str;
 
 pub struct ReaderActor;
 
@@ -18,9 +20,12 @@ impl Handler<LoveMessage> for ReaderActor {
         info!("Received msg from queue with Routing-key={}", routing_key);
         info!("Payload = {}", msg.body);
 
-        // match routing_key {
-        //     RoutingKey::LOVE =>
-        // }
+        match msg.routing_key {
+            RoutingKey::LOVE => {
+                let confession_msg: ConfessionMessage = from_str(&msg.body).unwrap();
+            }
+            RoutingKey::HATE => info!("confess hate"),
+        };
 
         Ok(())
     }
